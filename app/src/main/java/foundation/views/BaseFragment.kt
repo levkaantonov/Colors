@@ -1,4 +1,4 @@
-package levkaantonov.com.study.colors.views.base
+package foundation.views
 
 import androidx.fragment.app.Fragment
 
@@ -7,6 +7,6 @@ abstract class BaseFragment : Fragment() {
     abstract val viewModel: BaseViewModel
 
     fun notifyScreenUpdates() {
-        (requireActivity() as BaseActivity).notifyScreenUpdates()
+        (requireActivity() as FragmentsHolder).notifyScreenUpdates()
     }
 }

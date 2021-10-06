@@ -7,9 +7,9 @@ import androidx.lifecycle.SavedStateHandle
 import levkaantonov.com.study.colors.R
 import levkaantonov.com.study.colors.model.colors.ColorsRepository
 import levkaantonov.com.study.colors.model.colors.NamedColor
-import levkaantonov.com.study.colors.views.Navigator
-import levkaantonov.com.study.colors.views.UiActions
-import levkaantonov.com.study.colors.views.base.BaseViewModel
+import foundation.navigator.Navigator
+import foundation.uiactions.UiActions
+import foundation.views.BaseViewModel
 
 class ChangeColorViewModel(
     screen: ChangeColorFragment.Screen,

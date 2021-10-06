@@ -1,4 +1,4 @@
-package levkaantonov.com.study.colors.views.base
+package foundation.views
 
 import java.io.Serializable
 

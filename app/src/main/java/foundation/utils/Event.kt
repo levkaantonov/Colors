@@ -1,4 +1,4 @@
-package levkaantonov.com.study.colors.utils
+package foundation.utils
 
 class Event<T>(
     private val value: T

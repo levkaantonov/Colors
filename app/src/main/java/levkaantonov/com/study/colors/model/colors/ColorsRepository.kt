@@ -1,6 +1,6 @@
 package levkaantonov.com.study.colors.model.colors
 
-import levkaantonov.com.study.colors.model.Repository
+import foundation.model.Repository
 
 typealias ColorListener = (NamedColor) -> Unit
 

@@ -1,4 +1,4 @@
-package levkaantonov.com.study.colors.views
+package foundation.views
 
 interface HasScreenTitle {
 

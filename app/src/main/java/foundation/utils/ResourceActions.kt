@@ -1,4 +1,4 @@
-package levkaantonov.com.study.colors.utils
+package foundation.utils
 
 typealias ResourceAction<T> = (T) -> Unit
 

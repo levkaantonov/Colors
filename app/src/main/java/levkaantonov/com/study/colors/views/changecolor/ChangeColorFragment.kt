@@ -8,10 +8,10 @@ import android.view.ViewTreeObserver
 import androidx.recyclerview.widget.GridLayoutManager
 import levkaantonov.com.study.colors.R
 import levkaantonov.com.study.colors.databinding.FragmentChangeColorBinding
-import levkaantonov.com.study.colors.views.HasScreenTitle
-import levkaantonov.com.study.colors.views.base.BaseFragment
-import levkaantonov.com.study.colors.views.base.BaseScreen
-import levkaantonov.com.study.colors.views.base.screenViewModel
+import foundation.views.HasScreenTitle
+import foundation.views.BaseFragment
+import foundation.views.BaseScreen
+import foundation.views.screenViewModel
 
 class ChangeColorFragment : BaseFragment(), HasScreenTitle {
 
