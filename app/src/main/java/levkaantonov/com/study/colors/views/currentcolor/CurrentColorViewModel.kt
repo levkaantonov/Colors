@@ -1,14 +1,20 @@
 package levkaantonov.com.study.colors.views.currentcolor
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
+import foundation.model.PendingResult
+import foundation.model.SuccessResult
+import foundation.model.takeSuccess
+import foundation.navigator.Navigator
+import foundation.uiactions.UiActions
+import foundation.views.BaseViewModel
+import foundation.views.LiveResult
+import foundation.views.MutableLiveResult
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import levkaantonov.com.study.colors.R
 import levkaantonov.com.study.colors.model.colors.ColorListener
 import levkaantonov.com.study.colors.model.colors.ColorsRepository
 import levkaantonov.com.study.colors.model.colors.NamedColor
-import foundation.navigator.Navigator
-import foundation.uiactions.UiActions
-import foundation.views.BaseViewModel
 import levkaantonov.com.study.colors.views.changecolor.ChangeColorFragment
 
 class CurrentColorViewModel(
@@ -17,15 +23,18 @@ class CurrentColorViewModel(
     private val colorsRepository: ColorsRepository
 ) : BaseViewModel() {
 
-    private val _currentColor = MutableLiveData<NamedColor>()
-    val currentColor: LiveData<NamedColor> = _currentColor
+    private val _currentColor = MutableLiveResult<NamedColor>(PendingResult())
+    val currentColor: LiveResult<NamedColor> = _currentColor
 
     private val colorListener: ColorListener = {
-        _currentColor.postValue(it)
+        _currentColor.postValue(SuccessResult(it))
     }
 
     init {
-        colorsRepository.addListener(colorListener)
+        viewModelScope.launch {
+            delay(2000L)
+            colorsRepository.addListener(colorListener)
+        }
     }
 
     override fun onCleared() {
@@ -42,9 +51,17 @@ class CurrentColorViewModel(
     }
 
     fun changeColor() {
-        val currentColor = currentColor.value ?: return
+        val currentColor = currentColor.value.takeSuccess() ?: return
         val screen = ChangeColorFragment.Screen(currentColor.id)
         navigator.launch(screen)
+    }
+
+    fun tryAgain() {
+        viewModelScope.launch {
+            _currentColor.postValue(PendingResult())
+            delay(2000L)
+            colorsRepository.addListener(colorListener)
+        }
     }
 
 }
