@@ -3,27 +3,27 @@ package levkaantonov.com.study.colors.views.changecolor
 import androidx.lifecycle.*
 import androidx.lifecycle.Transformations.*
 import foundation.model.ErrorResult
+import foundation.model.FinalResult
 import foundation.model.PendingResult
 import foundation.model.SuccessResult
-import levkaantonov.com.study.colors.R
-import levkaantonov.com.study.colors.model.colors.ColorsRepository
-import levkaantonov.com.study.colors.model.colors.NamedColor
+import foundation.model.tasks.TasksFactory
 import foundation.navigator.Navigator
 import foundation.uiactions.UiActions
 import foundation.views.BaseViewModel
 import foundation.views.LiveResult
 import foundation.views.MediatorLiveResult
 import foundation.views.MutableLiveResult
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import levkaantonov.com.study.colors.R
+import levkaantonov.com.study.colors.model.colors.ColorsRepository
+import levkaantonov.com.study.colors.model.colors.NamedColor
 import levkaantonov.com.study.colors.views.changecolor.ChangeColorFragment.*
-import java.lang.RuntimeException
 
 class ChangeColorViewModel(
     screen: Screen,
     private val navigator: Navigator,
     private val uiActions: UiActions,
     private val colorsRepository: ColorsRepository,
+    private val tasksFactory: TasksFactory,
     savedStateHandle: SavedStateHandle
 ) : BaseViewModel(), ColorsAdapter.Listener {
 
@@ -46,13 +46,14 @@ class ChangeColorViewModel(
     }
 
     init {
-        viewModelScope.launch {
-            delay(2000L)
-            _availableColors.value = SuccessResult(colorsRepository.getAvailableColors())
-        }
+        load()
         _viewState.addSource(_availableColors) { mergeSources() }
         _viewState.addSource(_currentColorId) { mergeSources() }
         _viewState.addSource(_saveInProgress) { mergeSources() }
+    }
+
+    private fun load() {
+        colorsRepository.getAvailableColors().into(_availableColors)
     }
 
     override fun onColorChosen(namedColor: NamedColor) {
@@ -61,13 +62,23 @@ class ChangeColorViewModel(
     }
 
     fun onSavePressed() {
-        viewModelScope.launch {
-            _saveInProgress.postValue(true)
-            delay(1000L)
-            val currentColorId = _currentColorId.value ?: return@launch
-            val currentColor = colorsRepository.getById(currentColorId)
-            colorsRepository.currentColor = currentColor
-            navigator.goBack(result = currentColor)
+        _saveInProgress.postValue(true)
+        tasksFactory.async {
+            val currentColorId =
+                _currentColorId.value ?: throw IllegalStateException("Color ID should be not null")
+            val currentColor = colorsRepository.getById(currentColorId).await()
+            colorsRepository.setCurrentColor(currentColor).await()
+            return@async currentColor
+        }.safeEnqueue {
+            onSaved(it)
+        }
+    }
+
+    private fun onSaved(result: FinalResult<NamedColor>) {
+        _saveInProgress.value = false
+        when (result) {
+            is ErrorResult -> uiActions.toast(uiActions.getString(R.string.error_happened))
+            is SuccessResult -> navigator.goBack(result.data)
         }
     }
 
@@ -76,11 +87,7 @@ class ChangeColorViewModel(
     }
 
     fun tryAgain() {
-        viewModelScope.launch {
-            _availableColors.postValue(PendingResult())
-            delay(2000L)
-            _availableColors.postValue(SuccessResult(colorsRepository.getAvailableColors()))
-        }
+        load()
     }
 
     private fun mergeSources() {

@@ -27,7 +27,9 @@ fun <T> Result<T>?.takeSuccess(): T? {
     }
 }
 
-
 class PendingResult<T> : Result<T>()
-class SuccessResult<T>(val data: T) : Result<T>()
-class ErrorResult<T>(val exception: Exception) : Result<T>()
+
+sealed class FinalResult<T> :Result<T>() {}
+
+class SuccessResult<T>(val data: T) : FinalResult<T>()
+class ErrorResult<T>(val exception: Exception) : FinalResult<T>()

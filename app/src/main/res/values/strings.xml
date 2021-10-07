@@ -16,6 +16,7 @@
     <string name="change_color_screen_title">Change Color (%1$s)</string>
     <string name="change_color_screen_simple">Change Color</string>
     <string name="cancel">Cancel</string>
+    <string name="error_happened">Error</string>
     <string name="save">Save</string>
     <string name="selected">Selected</string>
     <string name="error_try_again">Error! Try Again</string>

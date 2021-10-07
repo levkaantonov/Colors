@@ -31,10 +31,12 @@ class CurrentColorViewModel(
     }
 
     init {
-        viewModelScope.launch {
-            delay(2000L)
-            colorsRepository.addListener(colorListener)
-        }
+        colorsRepository.addListener(colorListener)
+        load()
+    }
+
+    private fun load() {
+        colorsRepository.getCurrentColor().into(_currentColor)
     }
 
     override fun onCleared() {
@@ -57,11 +59,7 @@ class CurrentColorViewModel(
     }
 
     fun tryAgain() {
-        viewModelScope.launch {
-            _currentColor.postValue(PendingResult())
-            delay(2000L)
-            colorsRepository.addListener(colorListener)
-        }
+        load()
     }
 
 }
