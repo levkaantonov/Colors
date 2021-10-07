@@ -6,7 +6,8 @@ import foundation.model.ErrorResult
 import foundation.model.FinalResult
 import foundation.model.PendingResult
 import foundation.model.SuccessResult
-import foundation.model.tasks.TasksFactory
+import foundation.model.tasks.dispatchers.Dispatcher
+import foundation.model.tasks.factories.TasksFactory
 import foundation.navigator.Navigator
 import foundation.uiactions.UiActions
 import foundation.views.BaseViewModel
@@ -24,8 +25,9 @@ class ChangeColorViewModel(
     private val uiActions: UiActions,
     private val colorsRepository: ColorsRepository,
     private val tasksFactory: TasksFactory,
-    savedStateHandle: SavedStateHandle
-) : BaseViewModel(), ColorsAdapter.Listener {
+    savedStateHandle: SavedStateHandle,
+    dispatcher: Dispatcher
+) : BaseViewModel(dispatcher), ColorsAdapter.Listener {
 
     private val _saveInProgress = MutableLiveData(false)
     private val _availableColors = MutableLiveResult<List<NamedColor>>(PendingResult())

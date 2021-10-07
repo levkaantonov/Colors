@@ -68,8 +68,19 @@ class StackFragmentNavigator(
         activity.supportFragmentManager.unregisterFragmentLifecycleCallbacks(fragmentCallbacks)
     }
 
+    fun onBackPressed() {
+        val f: Fragment? = getCurrentFragment()
+        if(f is BaseFragment){
+            f.viewModel.onBackPressed()
+        }
+    }
+
+    private fun getCurrentFragment(): Fragment? {
+        return activity.supportFragmentManager.findFragmentById(containerId)
+    }
+
     fun notifyScreenUpdates() {
-        val f = activity.supportFragmentManager.findFragmentById(containerId)
+        val f = getCurrentFragment()
 
         if (activity.supportFragmentManager.backStackEntryCount > 0) {
             activity.supportActionBar?.setDisplayHomeAsUpEnabled(true)

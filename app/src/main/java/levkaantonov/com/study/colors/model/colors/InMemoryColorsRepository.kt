@@ -2,10 +2,12 @@ package levkaantonov.com.study.colors.model.colors
 
 import android.graphics.Color
 import foundation.model.tasks.Task
-import foundation.model.tasks.TasksFactory
+import foundation.model.tasks.ThreadUtils
+import foundation.model.tasks.factories.TasksFactory
 
 class InMemoryColorsRepository(
-    private val tasksFactory: TasksFactory
+    private val tasksFactory: TasksFactory,
+    private val threadUtils: ThreadUtils
 ) : ColorsRepository {
 
     private var currentColor: NamedColor = AVAILABLE_COLORS[0]
@@ -13,7 +15,7 @@ class InMemoryColorsRepository(
     private val listeners = mutableSetOf<ColorListener>()
 
     override fun setCurrentColor(color: NamedColor): Task<Unit> = tasksFactory.async {
-        Thread.sleep(2000L)
+        threadUtils.sleep(2000L)
         if(currentColor != color){
             currentColor = color
             listeners.forEach { it.invoke(currentColor) }
@@ -21,17 +23,17 @@ class InMemoryColorsRepository(
     }
 
     override fun getCurrentColor(): Task<NamedColor> = tasksFactory.async {
-        Thread.sleep(2000L)
+        threadUtils.sleep(2000L)
         currentColor
     }
 
     override fun getAvailableColors(): Task<List<NamedColor>> = tasksFactory.async {
-        Thread.sleep(2000L)
+        threadUtils.sleep(2000L)
         AVAILABLE_COLORS
     }
 
     override fun getById(id: Long): Task<NamedColor> = tasksFactory.async{
-        Thread.sleep(2000L)
+        threadUtils.sleep(2000L)
         AVAILABLE_COLORS.first { it.id == id }
     }
 

@@ -1,16 +1,14 @@
 package levkaantonov.com.study.colors.views.currentcolor
 
-import androidx.lifecycle.viewModelScope
 import foundation.model.PendingResult
 import foundation.model.SuccessResult
 import foundation.model.takeSuccess
+import foundation.model.tasks.dispatchers.Dispatcher
 import foundation.navigator.Navigator
 import foundation.uiactions.UiActions
 import foundation.views.BaseViewModel
 import foundation.views.LiveResult
 import foundation.views.MutableLiveResult
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import levkaantonov.com.study.colors.R
 import levkaantonov.com.study.colors.model.colors.ColorListener
 import levkaantonov.com.study.colors.model.colors.ColorsRepository
@@ -20,8 +18,9 @@ import levkaantonov.com.study.colors.views.changecolor.ChangeColorFragment
 class CurrentColorViewModel(
     private val navigator: Navigator,
     private val uiActions: UiActions,
-    private val colorsRepository: ColorsRepository
-) : BaseViewModel() {
+    private val colorsRepository: ColorsRepository,
+    dispatcher: Dispatcher
+) : BaseViewModel(dispatcher) {
 
     private val _currentColor = MutableLiveResult<NamedColor>(PendingResult())
     val currentColor: LiveResult<NamedColor> = _currentColor
