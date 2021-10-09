@@ -3,77 +3,47 @@ package levkaantonov.com.study.colors
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import foundation.ActivityScopeViewModel
-import foundation.navigator.IntermediateNavigator
-import foundation.navigator.StackFragmentNavigator
-import foundation.navigator.StackFragmentNavigator.*
-import foundation.uiactions.AndroidUiActions
+import foundation.sideeffects.SideEffectPluginsManager
+import foundation.sideeffects.dialogs.DialogsPlugin
+import foundation.sideeffects.intents.IntentsPlugin
+import foundation.sideeffects.navigator.NavigatorPlugin
+import foundation.sideeffects.navigator.StackFragmentNavigator
+import foundation.sideeffects.navigator.StackFragmentNavigator.*
+import foundation.sideeffects.permissions.PermissionsPlugin
+import foundation.sideeffects.resources.ResourcesPlugin
+import foundation.sideeffects.toasts.ToastsPlugin
 import foundation.utils.viewModelCreator
-import foundation.views.FragmentsHolder
+import foundation.views.activity.BaseActivity
 import levkaantonov.com.study.colors.databinding.ActivityMainBinding
 import levkaantonov.com.study.colors.views.currentcolor.CurrentColorFragment
 
-class MainActivity : AppCompatActivity(), FragmentsHolder {
+class MainActivity : BaseActivity() {
 
-    private lateinit var binding: ActivityMainBinding
-    private lateinit var navigator: StackFragmentNavigator
-
-    private val activityViewModel by viewModelCreator<ActivityScopeViewModel> {
-        ActivityScopeViewModel(
-            uiActions = AndroidUiActions(applicationContext),
-            navigator = IntermediateNavigator()
-        )
+    override fun registerPlugins(manager: SideEffectPluginsManager) = with(manager) {
+        val navigator = createNavigator()
+        register(ToastsPlugin())
+        register(ResourcesPlugin())
+        register(NavigatorPlugin(navigator))
+        register(PermissionsPlugin())
+        register(DialogsPlugin())
+        register(IntentsPlugin())
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-
-        navigator = StackFragmentNavigator(
-            activity = this,
-            defaultTitle = getString(R.string.app_name),
-            animations = Animations(
-                R.anim.enter,
-                R.anim.exit,
-                R.anim.pop_enter,
-                R.anim.pop_exit
-            ),
-            containerId = binding.fragmentContainerView.id
-        ) { CurrentColorFragment.Screen() }
-        navigator.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
     }
 
+    private fun createNavigator() = StackFragmentNavigator(
+        containerId = R.id.fragmentContainerView,
+        defaultTitle = getString(R.string.app_name),
+        animations = StackFragmentNavigator.Animations(
+            enterAnim = R.anim.enter,
+            exitAnim = R.anim.exit,
+            popEnterAnim = R.anim.pop_enter,
+            popExitAnim = R.anim.pop_exit
+        ),
+        initialScreenCreator = { CurrentColorFragment.Screen() }
+    )
 
-    override fun onSupportNavigateUp(): Boolean {
-        onBackPressed()
-        return true
-    }
-
-    override fun onResume() {
-        super.onResume()
-        activityViewModel.navigator.setTarget(navigator)
-    }
-
-    override fun onPause() {
-        super.onPause()
-        activityViewModel.navigator.setTarget(null)
-    }
-
-    override fun onDestroy() {
-        navigator.onDestroy()
-        super.onDestroy()
-    }
-
-    override fun notifyScreenUpdates() {
-        navigator.notifyScreenUpdates()
-    }
-
-    override fun getActivityScopeViewModel(): ActivityScopeViewModel {
-        return activityViewModel
-    }
-
-    override fun onBackPressed() {
-        navigator.onBackPressed()
-        super.onBackPressed()
-    }
 }

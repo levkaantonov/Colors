@@ -7,15 +7,19 @@ import androidx.lifecycle.ViewModel
 import androidx.savedstate.SavedStateRegistryOwner
 import foundation.ARG_SCREEN
 import foundation.BaseApplication
+import foundation.views.activity.ActivityDelegateHolder
 import java.lang.reflect.Constructor
 
 inline fun <reified VM : ViewModel> BaseFragment.screenViewModel() = viewModels<VM> {
     val application = requireActivity().application as BaseApplication
     val screen = requireArguments().getSerializable(ARG_SCREEN) as BaseScreen
 
-    val activityScopeViewModel = (requireActivity() as FragmentsHolder).getActivityScopeViewModel()
+    val activityScopeViewModel =
+        (requireActivity() as ActivityDelegateHolder).delegate.getActivityScopeViewModel()
 
-    val dependencies = listOf(screen, activityScopeViewModel) + application.singletonScopeDependencies
+    val dependencies =
+        listOf(screen) + activityScopeViewModel.sideEffectMediators + application.singletonScopeDependencies
+
     ViewModelFactory(dependencies, this)
 }
 
@@ -33,22 +37,19 @@ class ViewModelFactory(
         val constructor = constructors.maxByOrNull { it.typeParameters.size }!!
 
         val dependenciesWithSavedState = dependencies + handle
+
         val arguments = findDependencies(constructor, dependenciesWithSavedState)
 
         return constructor.newInstance(*arguments.toTypedArray()) as T
     }
 
-    private fun findDependencies(
-        constructor: Constructor<*>,
-        dependencies: List<Any>
-    ): List<Any> {
+    private fun findDependencies(constructor: Constructor<*>, dependencies: List<Any>): List<Any> {
         val args = mutableListOf<Any>()
         constructor.parameterTypes.forEach { parameterClass ->
-            val dependency = dependencies.first {
-                parameterClass.isAssignableFrom(it.javaClass)
-            }
+            val dependency = dependencies.first { parameterClass.isAssignableFrom(it.javaClass) }
             args.add(dependency)
         }
         return args
     }
+
 }

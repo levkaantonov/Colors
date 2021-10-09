@@ -48,10 +48,7 @@ class ColorsAdapter(
 
 
     interface Listener {
-        /**
-         * Called when user chooses the specified color
-         * @param namedColor color chosen by the user
-         */
+
         fun onColorChosen(namedColor: NamedColor)
     }
 

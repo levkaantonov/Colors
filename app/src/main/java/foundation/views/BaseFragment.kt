@@ -5,16 +5,17 @@ import android.view.ViewGroup
 import androidx.core.view.children
 import androidx.fragment.app.Fragment
 import foundation.model.ErrorResult
-import foundation.model.Result
 import foundation.model.PendingResult
+import foundation.model.Result
 import foundation.model.SuccessResult
+import foundation.views.activity.ActivityDelegateHolder
 
 abstract class BaseFragment : Fragment() {
 
     abstract val viewModel: BaseViewModel
 
     fun notifyScreenUpdates() {
-        (requireActivity() as FragmentsHolder).notifyScreenUpdates()
+        (requireActivity() as ActivityDelegateHolder).delegate.notifyScreenUpdates()
     }
 
     fun <T> renderResult(

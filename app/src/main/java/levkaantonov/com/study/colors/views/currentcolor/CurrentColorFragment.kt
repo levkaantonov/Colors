@@ -4,14 +4,10 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import foundation.model.ErrorResult
-import foundation.model.PendingResult
-import foundation.model.SuccessResult
-import levkaantonov.com.study.colors.databinding.FragmentCurrentColorBinding
 import foundation.views.BaseFragment
 import foundation.views.BaseScreen
 import foundation.views.screenViewModel
-import levkaantonov.com.study.colors.databinding.PartResultBinding
+import levkaantonov.com.study.colors.databinding.FragmentCurrentColorBinding
 import levkaantonov.com.study.colors.views.onTryAgain
 import levkaantonov.com.study.colors.views.renderSimpleResult
 
@@ -37,6 +33,10 @@ class CurrentColorFragment : BaseFragment() {
         }
         binding.changeColorButton.setOnClickListener {
             viewModel.changeColor()
+        }
+
+        binding.askPermissionsButton.setOnClickListener {
+            viewModel.requestPermission()
         }
 
         onTryAgain(binding.root) {

@@ -2,6 +2,7 @@ package foundation.model.tasks
 
 import foundation.model.FinalResult
 import foundation.model.tasks.dispatchers.Dispatcher
+import kotlinx.coroutines.suspendCancellableCoroutine
 
 typealias TaskListener<T> = (FinalResult<T>) -> Unit
 
@@ -17,4 +18,5 @@ interface Task<T> {
     fun cancel()
 
     fun enqueue(dispatcher: Dispatcher, listener: TaskListener<T>)
+
 }

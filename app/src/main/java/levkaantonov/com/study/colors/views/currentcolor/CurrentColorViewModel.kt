@@ -1,11 +1,19 @@
 package levkaantonov.com.study.colors.views.currentcolor
 
+import android.Manifest
 import foundation.model.PendingResult
 import foundation.model.SuccessResult
 import foundation.model.takeSuccess
 import foundation.model.tasks.dispatchers.Dispatcher
-import foundation.navigator.Navigator
-import foundation.uiactions.UiActions
+import foundation.model.tasks.factories.TasksFactory
+import foundation.sideeffects.dialogs.DialogConfig
+import foundation.sideeffects.dialogs.Dialogs
+import foundation.sideeffects.intents.Intents
+import foundation.sideeffects.navigator.Navigator
+import foundation.sideeffects.permissions.PermissionStatus
+import foundation.sideeffects.permissions.Permissions
+import foundation.sideeffects.resources.Resources
+import foundation.sideeffects.toasts.Toasts
 import foundation.views.BaseViewModel
 import foundation.views.LiveResult
 import foundation.views.MutableLiveResult
@@ -17,7 +25,12 @@ import levkaantonov.com.study.colors.views.changecolor.ChangeColorFragment
 
 class CurrentColorViewModel(
     private val navigator: Navigator,
-    private val uiActions: UiActions,
+    private val toasts: Toasts,
+    private val resources: Resources,
+    private val permissions: Permissions,
+    private val intents: Intents,
+    private val dialogs: Dialogs,
+    private val tasksFactory: TasksFactory,
     private val colorsRepository: ColorsRepository,
     dispatcher: Dispatcher
 ) : BaseViewModel(dispatcher) {
@@ -34,10 +47,6 @@ class CurrentColorViewModel(
         load()
     }
 
-    private fun load() {
-        colorsRepository.getCurrentColor().into(_currentColor)
-    }
-
     override fun onCleared() {
         super.onCleared()
         colorsRepository.removeListener(colorListener)
@@ -46,8 +55,8 @@ class CurrentColorViewModel(
     override fun onResult(result: Any) {
         super.onResult(result)
         if (result is NamedColor) {
-            val message = uiActions.getString(R.string.changed_color, result.name)
-            uiActions.toast(message)
+            val message = resources.getString(R.string.changed_color, result.name)
+            toasts.toast(message)
         }
     }
 
@@ -57,8 +66,46 @@ class CurrentColorViewModel(
         navigator.launch(screen)
     }
 
+    fun requestPermission() = tasksFactory.async<Unit> {
+        val permission = Manifest.permission.ACCESS_FINE_LOCATION
+        val hasPermission = permissions.hasPermissions(permission)
+        if (hasPermission) {
+            dialogs.show(createPermissionAlreadyGrantedDialog()).await()
+        } else {
+            when (permissions.requestPermission(permission).await()) {
+                PermissionStatus.GRANTED -> {
+                    toasts.toast(resources.getString(R.string.permissions_grated))
+                }
+                PermissionStatus.DENIED -> {
+                    toasts.toast(resources.getString(R.string.permissions_denied))
+                }
+                PermissionStatus.DENIED_FOREVER -> {
+                    if (dialogs.show(createAskForLaunchingAppSettingsDialog()).await()) {
+                        intents.openAppSettings()
+                    }
+                }
+            }
+        }
+    }.safeEnqueue()
+
     fun tryAgain() {
         load()
     }
 
+    private fun load() {
+        colorsRepository.getCurrentColor().into(_currentColor)
+    }
+
+    private fun createPermissionAlreadyGrantedDialog() = DialogConfig(
+        title = resources.getString(R.string.dialog_permissions_title),
+        message = resources.getString(R.string.permissions_already_granted),
+        positiveButton = resources.getString(R.string.action_ok)
+    )
+
+    private fun createAskForLaunchingAppSettingsDialog() = DialogConfig(
+        title = resources.getString(R.string.dialog_permissions_title),
+        message = resources.getString(R.string.open_app_settings_message),
+        positiveButton = resources.getString(R.string.action_open),
+        negativeButton = resources.getString(R.string.action_cancel)
+    )
 }

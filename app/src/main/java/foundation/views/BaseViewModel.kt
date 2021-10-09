@@ -24,11 +24,23 @@ open class BaseViewModel(
 
     private val tasks = mutableSetOf<Task<*>>()
 
-    open fun onResult(result: Any) {}
+    override fun onCleared() {
+        super.onCleared()
+        clearTasks()
+    }
+
+    open fun onResult(result: Any) {
+
+    }
+
+    open fun onBackPressed(): Boolean {
+        clearTasks()
+        return false
+    }
 
     fun <T> Task<T>.safeEnqueue(listener: TaskListener<T>? = null) {
         tasks.add(this)
-        this.enqueue(dispatcher = dispatcher) {
+        this.enqueue(dispatcher) {
             tasks.remove(this)
             listener?.invoke(it)
         }
@@ -39,15 +51,6 @@ open class BaseViewModel(
         this.safeEnqueue {
             liveResult.value = it
         }
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        clearTasks()
-    }
-
-    fun onBackPressed() {
-        clearTasks()
     }
 
     private fun clearTasks() {

@@ -1,25 +1,36 @@
 package foundation.utils
 
+import foundation.model.tasks.dispatchers.Dispatcher
+
 typealias ResourceAction<T> = (T) -> Unit
 
-class ResourceActions<T> {
+class ResourceActions<T>(
+    private val dispatcher: Dispatcher
+) {
 
-    private val actions = mutableListOf<ResourceAction<T>>()
     var resource: T? = null
-        set(value) {
-            field = value
-            if (value != null) {
-                actions.forEach { it(value) }
+        set(newValue) {
+            field = newValue
+            if (newValue != null) {
+                actions.forEach { action ->
+                    dispatcher.dispatch {
+                        action(newValue)
+                    }
+                }
                 actions.clear()
             }
         }
+
+    private val actions = mutableListOf<ResourceAction<T>>()
 
     operator fun invoke(action: ResourceAction<T>) {
         val resource = this.resource
         if (resource == null) {
             actions += action
         } else {
-            action(resource)
+            dispatcher.dispatch {
+                action(resource)
+            }
         }
     }
 

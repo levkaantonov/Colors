@@ -1,4 +1,4 @@
-package foundation.navigator
+package foundation.sideeffects.navigator
 
 import foundation.views.BaseScreen
 

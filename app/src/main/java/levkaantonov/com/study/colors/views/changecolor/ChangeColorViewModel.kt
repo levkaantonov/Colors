@@ -8,8 +8,9 @@ import foundation.model.PendingResult
 import foundation.model.SuccessResult
 import foundation.model.tasks.dispatchers.Dispatcher
 import foundation.model.tasks.factories.TasksFactory
-import foundation.navigator.Navigator
-import foundation.uiactions.UiActions
+import foundation.sideeffects.navigator.Navigator
+import foundation.sideeffects.resources.Resources
+import foundation.sideeffects.toasts.Toasts
 import foundation.views.BaseViewModel
 import foundation.views.LiveResult
 import foundation.views.MediatorLiveResult
@@ -22,7 +23,8 @@ import levkaantonov.com.study.colors.views.changecolor.ChangeColorFragment.*
 class ChangeColorViewModel(
     screen: Screen,
     private val navigator: Navigator,
-    private val uiActions: UiActions,
+    private val toasts: Toasts,
+    private val resources: Resources,
     private val colorsRepository: ColorsRepository,
     private val tasksFactory: TasksFactory,
     savedStateHandle: SavedStateHandle,
@@ -41,9 +43,9 @@ class ChangeColorViewModel(
     val screenTitle: LiveData<String> = map(viewState) { result ->
         if (result is SuccessResult) {
             val currentColor = result.data.colorsList.first { it.selected }
-            uiActions.getString(R.string.change_color_screen_title, currentColor.namedColor.name)
+            resources.getString(R.string.change_color_screen_title, currentColor.namedColor.name)
         } else {
-            uiActions.getString(R.string.change_color_screen_simple)
+            resources.getString(R.string.change_color_screen_simple)
         }
     }
 
@@ -79,7 +81,7 @@ class ChangeColorViewModel(
     private fun onSaved(result: FinalResult<NamedColor>) {
         _saveInProgress.value = false
         when (result) {
-            is ErrorResult -> uiActions.toast(uiActions.getString(R.string.error_happened))
+            is ErrorResult -> toasts.toast(resources.getString(R.string.error_happened))
             is SuccessResult -> navigator.goBack(result.data)
         }
     }
