@@ -1,10 +1,6 @@
-package foundation.model.tasks.callback
-
-import foundation.model.FinalResult
+package foundation.model
 
 typealias CancelListener = () -> Unit
-
-typealias ExecutionListener<T> = (Emitter<T>) -> Unit
 
 interface Emitter<T> {
 

@@ -1,19 +1,18 @@
 package levkaantonov.com.study.colors.model.colors
 
 import foundation.model.Repository
-import foundation.model.tasks.Task
 
 typealias ColorListener = (NamedColor) -> Unit
 
 interface ColorsRepository : Repository {
 
-    fun getAvailableColors(): Task<List<NamedColor>>
+    suspend fun getAvailableColors(): List<NamedColor>
 
-    fun getById(id: Long): Task<NamedColor>
+    suspend fun getById(id: Long): NamedColor
 
-    fun setCurrentColor(color: NamedColor) : Task<Unit>
+    suspend fun setCurrentColor(color: NamedColor)
 
-    fun getCurrentColor() : Task<NamedColor>
+    suspend fun getCurrentColor(): NamedColor
 
     fun addListener(listener: ColorListener)
 

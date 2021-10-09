@@ -2,7 +2,7 @@ package foundation.sideeffects.toasts
 
 import android.content.Context
 import android.widget.Toast
-import foundation.model.tasks.dispatchers.MainThreadDispatcher
+import foundation.model.dispatchers.MainThreadDispatcher
 import foundation.sideeffects.SideEffectMediator
 
 class ToastsSideEffectMediator(

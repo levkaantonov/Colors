@@ -1,40 +1,39 @@
 package levkaantonov.com.study.colors.model.colors
 
 import android.graphics.Color
-import foundation.model.tasks.Task
-import foundation.model.tasks.ThreadUtils
-import foundation.model.tasks.factories.TasksFactory
+import foundation.model.coroutines.IoDispatcher
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 
 class InMemoryColorsRepository(
-    private val tasksFactory: TasksFactory,
-    private val threadUtils: ThreadUtils
+    private val ioDispatcher: IoDispatcher
 ) : ColorsRepository {
 
     private var currentColor: NamedColor = AVAILABLE_COLORS[0]
 
     private val listeners = mutableSetOf<ColorListener>()
 
-    override fun setCurrentColor(color: NamedColor): Task<Unit> = tasksFactory.async {
-        threadUtils.sleep(2000L)
-        if(currentColor != color){
+    override suspend fun setCurrentColor(color: NamedColor) = withContext(ioDispatcher.value) {
+        delay(1000L)
+        if (currentColor != color) {
             currentColor = color
             listeners.forEach { it.invoke(currentColor) }
         }
     }
 
-    override fun getCurrentColor(): Task<NamedColor> = tasksFactory.async {
-        threadUtils.sleep(2000L)
-        currentColor
+    override suspend fun getCurrentColor(): NamedColor = withContext(ioDispatcher.value) {
+        delay(1000L)
+        return@withContext currentColor
     }
 
-    override fun getAvailableColors(): Task<List<NamedColor>> = tasksFactory.async {
-        threadUtils.sleep(2000L)
-        AVAILABLE_COLORS
+    override suspend fun getAvailableColors(): List<NamedColor> = withContext(ioDispatcher.value) {
+        delay(1000L)
+        return@withContext AVAILABLE_COLORS
     }
 
-    override fun getById(id: Long): Task<NamedColor> = tasksFactory.async{
-        threadUtils.sleep(2000L)
-        AVAILABLE_COLORS.first { it.id == id }
+    override suspend fun getById(id: Long): NamedColor = withContext(ioDispatcher.value) {
+        delay(1000L)
+        return@withContext AVAILABLE_COLORS.first { it.id == id }
     }
 
     override fun addListener(listener: ColorListener) {

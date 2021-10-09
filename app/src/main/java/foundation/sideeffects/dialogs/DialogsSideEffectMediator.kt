@@ -1,38 +1,40 @@
 package foundation.sideeffects.dialogs
 
+import foundation.model.Emitter
 import foundation.model.ErrorResult
-import foundation.model.tasks.Task
-import foundation.model.tasks.callback.CallbackTask
-import foundation.model.tasks.callback.Emitter
 import foundation.sideeffects.SideEffectMediator
+import foundation.toEmitter
+import kotlinx.coroutines.suspendCancellableCoroutine
 
 class DialogsSideEffectMediator : SideEffectMediator<DialogsSideEffectImpl>(), Dialogs {
 
     var retainedState = RetainedState()
 
-    override fun show(dialogConfig: DialogConfig): Task<Boolean> = CallbackTask.create { emitter ->
-        if (retainedState.record != null) {
-            emitter.emit(ErrorResult(IllegalStateException("Can't launch more than 1 dialog at a time")))
-            return@create
-        }
-
-        val wrappedEmitter = Emitter.wrap(emitter) {
-            retainedState.record = null
-        }
-
-        val record = DialogRecord(wrappedEmitter, dialogConfig)
-        wrappedEmitter.setCancelListener {
-            target { implementation ->
-                implementation.removeDialog()
+    override suspend fun show(dialogConfig: DialogConfig): Boolean =
+        suspendCancellableCoroutine { continuation ->
+            val emitter = continuation.toEmitter()
+            if (retainedState.record != null) {
+                emitter.emit(ErrorResult(IllegalStateException("Can't launch more than 1 dialog at a time")))
+                return@suspendCancellableCoroutine
             }
-        }
 
-        target { implementation ->
-            implementation.showDialog(record)
-        }
+            val wrappedEmitter = Emitter.wrap(emitter) {
+                retainedState.record = null
+            }
 
-        retainedState.record = record
-    }
+            val record = DialogRecord(wrappedEmitter, dialogConfig)
+            wrappedEmitter.setCancelListener {
+                target { implementation ->
+                    implementation.removeDialog()
+                }
+            }
+
+            target { implementation ->
+                implementation.showDialog(record)
+            }
+
+            retainedState.record = record
+        }
 
     class DialogRecord(
         val emitter: Emitter<Boolean>,
