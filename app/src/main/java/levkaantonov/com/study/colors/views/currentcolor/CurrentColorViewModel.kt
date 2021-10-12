@@ -16,6 +16,7 @@ import foundation.sideeffects.toasts.Toasts
 import foundation.views.BaseViewModel
 import foundation.views.LiveResult
 import foundation.views.MutableLiveResult
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import levkaantonov.com.study.colors.R
 import levkaantonov.com.study.colors.model.colors.ColorListener
@@ -36,18 +37,13 @@ class CurrentColorViewModel(
     private val _currentColor = MutableLiveResult<NamedColor>(PendingResult())
     val currentColor: LiveResult<NamedColor> = _currentColor
 
-    private val colorListener: ColorListener = {
-        _currentColor.postValue(SuccessResult(it))
-    }
-
     init {
-        colorsRepository.addListener(colorListener)
+        viewModelScope.launch {
+            colorsRepository.listenCurrentColor().collect {
+                _currentColor.postValue(SuccessResult(it))
+            }
+        }
         load()
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        colorsRepository.removeListener(colorListener)
     }
 
     override fun onResult(result: Any) {

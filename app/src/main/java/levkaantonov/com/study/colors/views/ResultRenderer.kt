@@ -4,8 +4,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import androidx.core.view.children
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
 import foundation.model.Result
 import foundation.views.BaseFragment
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import levkaantonov.com.study.colors.R
 import levkaantonov.com.study.colors.databinding.PartResultBinding
 
@@ -34,6 +39,14 @@ fun <T> BaseFragment.renderSimpleResult(
             onSuccess(successData)
         }
     )
+}
+
+fun <T> BaseFragment.collectFlow(flow: Flow<T>, onCollect: (T) -> Unit) {
+    viewLifecycleOwner.lifecycleScope.launchWhenStarted {
+        flow.collect {
+            onCollect(it)
+        }
+    }
 }
 
 fun BaseFragment.onTryAgain(root: View, onTryAgainPressed: () -> Unit) {

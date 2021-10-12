@@ -6,6 +6,8 @@ import foundation.model.Result
 import foundation.model.SuccessResult
 import foundation.utils.Event
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collect
 
 typealias LiveEvent<T> = LiveData<Event<T>>
 typealias MutableLiveEvent<T> = MutableLiveData<Event<T>>
@@ -38,9 +40,40 @@ open class BaseViewModel : ViewModel() {
             try {
                 liveResult.postValue(SuccessResult(block()))
             } catch (e: Exception) {
-                liveResult.postValue(ErrorResult(e))
+                if (e !is CancellationException)
+                    liveResult.postValue(ErrorResult(e))
             }
         }
+    }
+
+    fun <T> into(stateFlow: MutableStateFlow<Result<T>>, block: suspend () -> T) {
+        viewModelScope.launch {
+            try {
+                stateFlow.value = SuccessResult(block())
+            } catch (e: Exception) {
+                if (e !is CancellationException)
+                    stateFlow.value = ErrorResult(e)
+            }
+        }
+    }
+
+    fun <T> SavedStateHandle.getStateFlow(key: String, initialValue: T): MutableStateFlow<T> {
+        val savedStateHandle = this
+        val mutableStateflow = MutableStateFlow(savedStateHandle[key] ?: initialValue)
+
+        viewModelScope.launch {
+            mutableStateflow.collect {
+                savedStateHandle[key] = it
+            }
+        }
+
+        viewModelScope.launch {
+            savedStateHandle.getLiveData<T>(key).asFlow().collect {
+                mutableStateflow.value = it
+            }
+        }
+
+        return mutableStateflow
     }
 
     private fun clearViewModelScope() {
